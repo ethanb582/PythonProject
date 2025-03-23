@@ -31,7 +31,7 @@ def stock_summary(ticker, price, prev_close, market_cap):  # Function outside th
 
 API_KEY = ""
 PROJECT_ID = ""
-USER_ID = "user_1232323"  # Static user ID for Voiceflow
+USER_ID = ""  # Static user ID for Voiceflow
 
 def talk_to_voiceflow(user_input):#function to send user input to Voiceflow and get a response 
     """Sends user input to the Voiceflow API and returns a response"""
@@ -43,7 +43,7 @@ def talk_to_voiceflow(user_input):#function to send user input to Voiceflow and 
     }
 
     data = {
-        "userID": "user_123",  # Static user ID (can be dynamic)
+        "userID": USER_ID, 
         "actions": [{"type": "text", "payload": user_input}]
     }
 
