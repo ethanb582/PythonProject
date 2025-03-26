@@ -3,7 +3,9 @@ import requests  # Importing requests to make API calls,
 import yfinance as yf# Importing Yahoo Finance to fetch real stock data,
 
 class StockChecker:  # Defining a class to manage stock data retrieval,
-
+    def __init__(self, ticker): 
+        self.ticker = ticker
+        
     def get_price(self, ticker):  # Method to fetch the latest stock price,
         stock = yf.Ticker(ticker)  # Create a Yahoo Finance object for the stock,
         price = stock.history(period="1d")["Close"].iloc[-1]  # Get latest closing price,
