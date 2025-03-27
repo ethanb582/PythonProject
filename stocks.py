@@ -1,37 +1,48 @@
 # stocks.py
-import requests  # Importing requests to make API calls,
-import yfinance as yf# Importing Yahoo Finance to fetch real stock data,
+import requests   
+import yfinance as yf
 
-class StockChecker:  # Defining a class to manage stock data retrieval,
+class StockChecker: 
     def __init__(self, ticker): 
         self.ticker = ticker
-        
-    def get_price(self, ticker):  # Method to fetch the latest stock price,
-        stock = yf.Ticker(ticker)  # Create a Yahoo Finance object for the stock,
-        price = stock.history(period="1d")["Close"].iloc[-1]  # Get latest closing price,
-        return round(price, 2)  # Return rounded price,
 
-    def get_previous_close(self, ticker):  # Method to fetch the previous close price,
-        stock = yf.Ticker(ticker)  # Create a Yahoo Finance object for the stock,
-        prev_close = stock.info.get("previousClose", "N/A")  # Get previous close price,
-        return round(prev_close, 2) if isinstance(prev_close, (int, float)) else "N/A"  # Ensure it’s a number before rounding,
+    def get_ticker(self):
+        return self.ticker  # Getter method that returns the current ticker stored in the object
 
-    def get_market_cap(self, ticker):  # Method to fetch the market capitalization of the stock,
-        stock = yf.Ticker(ticker)  # Create a Yahoo Finance object for the stock,
-        market_cap = stock.info.get("marketCap", "N/A")  # Get market cap,
-        return f"${market_cap:,}" if isinstance(market_cap, int) else "N/A"  # Format as a readable number,
+    def set_ticker(self, new_ticker):
+        self.ticker = new_ticker  # Setter method that updates the value of the ticker stored in the object
 
-def stock_summary(ticker, price, prev_close, market_cap):  # Function outside the class to display stock summary,
-    print(f"Stock: {ticker.upper()}")  # Display stock ticker,
-    print(f"Current Price: ${price}")  # Display current price,
-    print(f"Previous Close: ${prev_close}")  # Display previous close price,
-    print(f"Market Cap: {market_cap}")  # Display market cap,
+    def get_price(self): 
+        """Fetches real stock price for a given ticker"""
+        stock = yf.Ticker(self.ticker)  
+        price = stock.history(period="1d")["Close"].iloc[-1]  
+        return round(price, 2) 
+
+    def get_previous_close(self): 
+        """Fetches the previous day's closing price"""
+        stock = yf.Ticker(self.ticker) 
+        prev_close = stock.info.get("previousClose", "N/A")  
+        return round(prev_close, 2) if isinstance(prev_close, (int, float)) else "N/A" 
+
+    def get_market_cap(self): 
+        #Fetches the stock's market capitalization
+        stock = yf.Ticker(self.ticker) 
+        market_cap = stock.info.get("marketCap", "N/A") 
+        return f"${market_cap:,}" if isinstance(market_cap, int) else "N/A" 
+
+    def stock_summary(self): 
+        """Prints a simple stock summary"""
+        print(f"Stock: {self.ticker.upper()}")  
+        print(f"Current Price: ${self.get_price()}") 
+        print(f"Previous Close: ${self.get_previous_close()}") 
+        print(f"Market Cap: {self.get_market_cap()}") 
 
 API_KEY = ""
 PROJECT_ID = ""
-USER_ID = ""  # Static user ID for Voiceflow
+USER_ID = "" 
 
-def talk_to_voiceflow(user_input):#function to send user input to Voiceflow and get a response 
+def talk_to_voiceflow(user_input):
+    #Sends user input to the Voiceflow API and returns a response
     url = f"https://general-runtime.voiceflow.com/state/user/{USER_ID}/interact"
 
     headers = {
@@ -69,4 +80,4 @@ def talk_to_voiceflow(user_input):#function to send user input to Voiceflow and 
         return "Error 503: Voiceflow under maintenance, please visit https://statusgator.com/services/voiceflow for updates."
 
     else :
-        return f"Error {response.status_code}: {response.text}
+        return f"Error {response.status_code}: {response.text}"
