@@ -1,45 +1,73 @@
 # stocks.py
-import requests   
+import time 
+import requests
 import yfinance as yf
 
-class StockChecker: 
-    def __init__(self, ticker): 
+class StockChecker:
+    def __init__(self, ticker, max_retries, retry_delay):
         self.ticker = ticker
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
     def get_ticker(self):
-        return self.ticker  # Getter method that returns the current ticker stored in the object
+        return self.ticker
 
     def set_ticker(self, new_ticker):
-        self.ticker = new_ticker  # Setter method that updates the value of the ticker stored in the object
+        self.ticker = new_ticker
 
-    def get_price(self): 
+    def _retry_yfinance_call(self, func):
+        """
+        Internal retry wrapper for yfinance operations.
+        Retries the function call up to max_retries times.
+        """
+        for attempt in range(self.max_retries): 
+            try:
+                return func()
+            except (IndexError, KeyError, ValueError, TypeError) as e:
+                print(f"Attempt {attempt + 1} failed: {e}")
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.retry_delay)
+                else:
+                    print("All retry attempts failed.")
+        return "N/A"
+
+    def get_price(self):
         """Fetches real stock price for a given ticker"""
-        stock = yf.Ticker(self.ticker)  
-        price = stock.history(period="1d")["Close"].iloc[-1]  
-        return round(price, 2) 
+        def fetch_price():
+            stock = yf.Ticker(self.ticker)
+            price = stock.history(period="1d")["Close"].iloc[-1]
+            return round(price, 2)
 
-    def get_previous_close(self): 
+        return self._retry_yfinance_call(fetch_price)
+
+    def get_previous_close(self):
         """Fetches the previous day's closing price"""
-        stock = yf.Ticker(self.ticker) 
-        prev_close = stock.info.get("previousClose", "N/A")  
-        return round(prev_close, 2) if isinstance(prev_close, (int, float)) else "N/A" 
+        def fetch_previous():
+            stock = yf.Ticker(self.ticker)
+            prev_close = stock.info.get("previousClose", "N/A")
+            return round(prev_close, 2) if isinstance(prev_close, (int, float)) else "N/A"
 
-    def get_market_cap(self): 
-        #Fetches the stock's market capitalization
-        stock = yf.Ticker(self.ticker) 
-        market_cap = stock.info.get("marketCap", "N/A") 
-        return f"${market_cap:,}" if isinstance(market_cap, int) else "N/A" 
+        return self._retry_yfinance_call(fetch_previous)
 
-    def stock_summary(self): 
+    def get_market_cap(self):
+        """Fetches the stock's market capitalization"""
+        def fetch_cap():
+            stock = yf.Ticker(self.ticker)
+            market_cap = stock.info.get("marketCap", "N/A")
+            return f"${market_cap:,}" if isinstance(market_cap, int) else "N/A"
+
+        return self._retry_yfinance_call(fetch_cap)
+
+    def stock_summary(self):
         """Prints a simple stock summary"""
-        print(f"Stock: {self.ticker.upper()}")  
-        print(f"Current Price: ${self.get_price()}") 
-        print(f"Previous Close: ${self.get_previous_close()}") 
-        print(f"Market Cap: {self.get_market_cap()}") 
+        print(f"Stock: {self.ticker.upper()}")
+        print(f"Current Price: ${self.get_price()}")
+        print(f"Previous Close: ${self.get_previous_close()}")
+        print(f"Market Cap: {self.get_market_cap()}")
 
 API_KEY = ""
 PROJECT_ID = ""
-USER_ID = "" 
+USER_ID = "user_1232323" 
 
 def talk_to_voiceflow(user_input):
     #Sends user input to the Voiceflow API and returns a response
